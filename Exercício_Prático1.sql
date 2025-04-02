@@ -149,17 +149,52 @@ WHERE c.curso_id NOT IN (SELECT DISTINCT curso_id FROM matricula)
 
 -- 13. Liste os nomes dos alunos e a quantidade de cursos em que estão matriculados.
 
+SELECT a.nome, COUNT(m.curso_id) AS cursos_matriculados 
+FROM aluno a 
+LEFT JOIN matricula m ON a.aluno_id = m.aluno_id 
+GROUP BY a.nome;
+
 -- 14. Calcule a nota média de todos os alunos.
+
+SELECT AVG(nota) AS media_geral 
+FROM matricula 
+WHERE nota IS NOT NULL;
 
 -- 15. Calcule a média da nota por curso.
 
+SELECT c.titulo, AVG(m.nota) AS media 
+FROM curso c 
+JOIN matricula m ON c.curso_id = m.curso_id 
+WHERE m.nota IS NOT NULL 
+GROUP BY c.titulo;
+
 -- 16. Encontre a maior nota registrada.
+
+SELECT MAX(nota) AS maior_nota 
+FROM matricula;
 
 -- 17. Mostre o aluno com a menor nota.
 
+SELECT a.nome, m.nota 
+FROM aluno a 
+JOIN matricula m ON a.aluno_id = m.aluno_id 
+WHERE m.nota = (SELECT MIN(nota) FROM matricula WHERE nota IS NOT NULL);
+
 -- 18. Mostre a quantidade total de matrículas por curso.
 
+SELECT c.titulo, COUNT(m.aluno_id) AS total_matriculas 
+FROM curso c 
+LEFT JOIN matricula m ON c.curso_id = m.curso_id 
+GROUP BY c.titulo;
+
+
 -- 19. Liste os alunos com média de nota maior ou igual a 8.0.
+
+SELECT a.nome, AVG(m.nota) AS media 
+FROM aluno a 
+JOIN matricula m ON a.aluno_id = m.aluno_id 
+WHERE m.nota IS NOT NULL 
+GROUP BY a.nome HAVING AVG(m.nota) >= 8.0;
 
 -- 20. Mostre a média, menor e maior nota por curso.
 
