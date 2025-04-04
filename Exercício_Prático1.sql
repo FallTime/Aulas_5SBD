@@ -62,7 +62,7 @@ INSERT INTO matricula VALUES (1, 103, TO_DATE('2024-03-15', 'YYYY-MM-DD'), 6.5);
 
 -- 1. Liste todos os alunos matriculados no curso de "Banco de Dados".
 
--- Primeira Escrita
+-- Primeira Escrita, ela é ruim pq depende de saber o id dos cursos.
 SELECT a.aluno_id, a.nome, a.email
 FROM aluno a
 JOIN matricula m ON m.aluno_id = a.aluno_id
@@ -74,6 +74,11 @@ FROM aluno a
 JOIN matricula m ON m.aluno_id = a.aluno_id
 JOIN curso c ON m.curso_id = c.curso_id 
 WHERE c.titulo = 'Banco de Dados'
+
+-- Junções Proprietárias da ORACLE
+SELECT a.aluno_id, a.nome, a.email
+FROM aluno a, matricula m, curso c
+WHERE m.aluno_id = a.aluno_id AND m.curso_id = c.curso_id  AND c.titulo = 'Banco de Dados'
 
 -- 2. Liste todos os cursos com carga horária maior que 40 horas.
 
@@ -87,6 +92,12 @@ SELECT a.aluno_id, a.nome, a.email
 FROM aluno a
 JOIN matricula m ON m.aluno_id = a.aluno_id
 WHERE m.nota IS NULL
+
+-- Junções Proprietárias da ORACLE
+  
+SELECT a.aluno_id, a.nome, a.email
+FROM aluno a, matricula m
+WHERE m.aluno_id = a.aluno_id AND m.nota IS NULL
 
 -- 4. Liste as matrículas realizadas depois do dia 01/01/2024.
   
@@ -113,12 +124,24 @@ FROM aluno a
 JOIN matricula m ON m.aluno_id = a.aluno_id
 JOIN curso c ON m.curso_id = c.curso_id
 
+-- Junções Proprietárias da ORACLE
+
+SELECT a.nome, c.titulo, m.data_matricula
+FROM aluno a, curso c, matricula m
+WHERE m.aluno_id = a.aluno_id AND m.curso_id = c.curso_id
+
 -- 8. Liste os alunos e as notas que receberam em cada curso.
 
 SELECT a.nome, c.titulo, m.nota
 FROM aluno a
 JOIN matricula m ON m.aluno_id = a.aluno_id
 JOIN curso c ON m.curso_id = c.curso_id
+
+-- Junções Proprietárias da ORACLE
+
+SELECT a.nome, c.titulo AS curso , m.nota
+FROM aluno a, matricula m, curso c
+WHERE m.aluno_id = a.aluno_id AND m.curso_id = c.curso_id
 
 -- 9. Mostre os cursos que o aluno chamado "João Silva" está matriculado.
 
@@ -128,11 +151,24 @@ JOIN aluno a ON m.aluno_id = a.aluno_id
 JOIN curso c ON m.curso_id = c.curso_id
 WHERE a.nome = 'João Silva'
 
+-- Junções Proprietárias da ORACLE
+  
+SELECT c.titulo, m.data_matricula
+FROM matricula m, aluno a, curso c
+WHERE m.aluno_id = a.aluno_id AND m.curso_id = c.curso_id AND a.nome = 'João Silva'
+
 -- 10. Liste os títulos dos cursos que possuem mais de um aluno matriculado.
 
 SELECT c.titulo, COUNT(*) AS qtd
 FROM curso c
 JOIN matricula m ON c.curso_id = m.curso_id
+GROUP BY c.titulo HAVING COUNT(*) > 1
+
+-- Junções Proprietárias da ORACLE
+  
+SELECT c.titulo, COUNT(*) AS qtd
+FROM curso c, matricula m
+WHERE c.curso_id = m.curso_id
 GROUP BY c.titulo HAVING COUNT(*) > 1
 
 -- 11. Mostre todos os alunos sem matrícula em nenhum curso.
@@ -154,6 +190,13 @@ FROM aluno a
 LEFT JOIN matricula m ON a.aluno_id = m.aluno_id 
 GROUP BY a.nome;
 
+-- Junções Proprietárias da ORACLE
+
+SELECT a.nome, COUNT(m.curso_id) AS cursos_matriculados 
+FROM aluno a, matricula m
+WHERE a.aluno_id = m.aluno_id 
+GROUP BY a.nome;
+
 -- 14. Calcule a nota média de todos os alunos.
 
 SELECT AVG(nota) AS media_geral 
@@ -168,6 +211,13 @@ JOIN matricula m ON c.curso_id = m.curso_id
 WHERE m.nota IS NOT NULL 
 GROUP BY c.titulo;
 
+-- Junções Proprietárias da ORACLE
+
+SELECT c.titulo, AVG(m.nota) AS media 
+FROM curso c, matricula m
+WHERE c.curso_id = m.curso_id AND m.nota IS NOT NULL 
+GROUP BY c.titulo;
+
 -- 16. Encontre a maior nota registrada.
 
 SELECT MAX(nota) AS maior_nota 
@@ -180,6 +230,12 @@ FROM aluno a
 JOIN matricula m ON a.aluno_id = m.aluno_id 
 WHERE m.nota = (SELECT MIN(nota) FROM matricula WHERE nota IS NOT NULL);
 
+-- Junções Proprietárias da ORACLE
+
+SELECT a.nome, m.nota 
+FROM aluno a, matricula m
+WHERE a.aluno_id = m.aluno_id AND m.nota = (SELECT MIN(nota) FROM matricula WHERE nota IS NOT NULL);
+
 -- 18. Mostre a quantidade total de matrículas por curso.
 
 SELECT c.titulo, COUNT(m.aluno_id) AS total_matriculas 
@@ -187,6 +243,12 @@ FROM curso c
 LEFT JOIN matricula m ON c.curso_id = m.curso_id 
 GROUP BY c.titulo;
 
+-- Junções Proprietárias da ORACLE
+
+SELECT c.titulo, COUNT(m.aluno_id) AS total_matriculas 
+FROM curso c, matricula m
+WHERE c.curso_id = m.curso_id 
+GROUP BY c.titulo;
 
 -- 19. Liste os alunos com média de nota maior ou igual a 8.0.
 
@@ -196,10 +258,24 @@ JOIN matricula m ON a.aluno_id = m.aluno_id
 WHERE m.nota IS NOT NULL 
 GROUP BY a.nome HAVING AVG(m.nota) >= 8.0;
 
+-- Junções Proprietárias da ORACLE
+
+SELECT a.nome, AVG(m.nota) AS media 
+FROM aluno a, matricula m
+WHERE a.aluno_id = m.aluno_id AND m.nota IS NOT NULL 
+GROUP BY a.nome HAVING AVG(m.nota) >= 8.0;
+
 -- 20. Mostre a média, menor e maior nota por curso.
 
 SELECT c.titulo, AVG(m.nota) AS media, MIN(m.nota) AS menor, MAX(m.nota) AS maior
 FROM matricula m
 JOIN curso c ON m.curso_id = c.curso_id
 WHERE m.nota IS NOT NULL
+GROUP BY c.titulo
+
+-- Junções Proprietárias da ORACLE
+
+SELECT c.titulo, AVG(m.nota) AS media, MIN(m.nota) AS menor, MAX(m.nota) AS maior
+FROM matricula m, curso c  
+WHERE m.curso_id = c.curso_id AND m.nota IS NOT NULL
 GROUP BY c.titulo
